@@ -13,10 +13,12 @@ https://www.tomshardware.com/best-picks/raspberry-pi-microsd-cards
 https://www.jeffgeerling.com/blog/2019/raspberry-pi-microsd-card-performance-comparison-2019
 
 ## install
-  sudo -i
-  apt install fio bash
-  curl https://raw.githubusercontent.com/bkw777/sdtest/main/sdtest > /usr/local/bin/sdtest
-  chmod 755 /usr/local/bin/sdtest
+```
+sudo -i
+apt install fio bash
+curl https://raw.githubusercontent.com/bkw777/sdtest/main/sdtest > /usr/local/bin/sdtest
+chmod 755 /usr/local/bin/sdtest
+```
 
 ## usage
-  sdtest
+```sdtest```
