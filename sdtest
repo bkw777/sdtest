@@ -1,0 +1,69 @@
+#!/bin/bash
+# self-contained version of agnostics/sdtest.sh
+# Brian K. White - b.kenyon.w@gmail.com
+
+passes=${1:-10}	# run each operation this many times
+
+# target - directory and file on the device you want to test
+# don't use /tmp unless you actually want to test ram instead of a storage device
+td=/var/tmp
+tf=.${0//\//_}.t
+
+# this should be in normal /tmp
+tmp=/tmp
+jobfile=${tmp}/.${0//\//_}.fiojob
+
+cleanup () {
+	rm -f ${td}/${tf} ${jobfile}
+}
+
+fl () {
+	printf '%16s %10s %10s\n' $1 $2 $3
+}
+
+trap cleanup EXIT
+
+cat <<-%%EOF >${jobfile}
+	[global]
+	ioengine=libaio
+	iodepth=4
+	size=64m
+	direct=1
+	end_fsync=1
+	directory=${td}
+	filename=${tf}
+	;numjobs=\$ncpus
+
+	[seq-write]
+	loops=${passes}
+	rw=write
+	bs=512k
+	stonewall
+
+	[rand-4k-write]
+	loops=${passes}
+	rw=randwrite
+	bs=4k
+	runtime=10
+	stonewall
+
+	[rand-4k-read]
+	loops=${passes}
+	rw=randread
+	bs=4k
+	runtime=10
+	stonewall
+%%EOF
+
+echo "Storage Device Speed Test"
+echo "Each test below is repeated ${passes} times internally."
+echo
+
+fl OPERATION KB/S IOPS
+
+fio --output-format=terse ${jobfile} |while IFS=';' read -r -a x ;do
+	case ${x[2]} in
+		*-write) fl ${x[2]} ${x[47]} ${x[48]} ;;
+		*-read) fl ${x[2]} ${x[6]} ${x[7]} ;;
+	esac
+done
