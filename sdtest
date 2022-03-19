@@ -2,11 +2,13 @@
 # self-contained version of agnostics/sdtest.sh
 # Brian K. White - b.kenyon.w@gmail.com
 
-passes=${1:-10}	# run each operation this many times
+# Target directory - directory on the device that you want to test
+# Don't use "/tmp" unless you actually wanted to test ram.
+target_dir=${1:-/var/tmp}
 
-# target - directory and file on the device you want to test
-# don't use /tmp unless you actually want to test ram instead of a storage device
-td=/var/tmp
+# run each operation this many times
+passes=${2:-10}
+
 tf=.${0//\//_}.t
 
 # this should be in normal /tmp
@@ -14,7 +16,7 @@ tmp=/tmp
 jobfile=${tmp}/.${0//\//_}.fiojob
 
 cleanup () {
-	rm -f ${td}/${tf} ${jobfile}
+	rm -f ${target_dir}/${tf} ${jobfile}
 }
 
 fl () {
@@ -30,7 +32,7 @@ cat <<-%%EOF >${jobfile}
 	size=64m
 	direct=1
 	end_fsync=1
-	directory=${td}
+	directory=${target_dir}
 	filename=${tf}
 	;numjobs=\$ncpus
 
@@ -56,7 +58,7 @@ cat <<-%%EOF >${jobfile}
 %%EOF
 
 echo "Storage Device Speed Test"
-echo "Each test below is repeated ${passes} times internally."
+echo "Working in ${target_dir}, ${passes} repetitions."
 echo
 
 fl OPERATION KB/S IOPS
